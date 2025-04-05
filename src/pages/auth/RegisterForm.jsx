@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { FiUser, FiMail, FiLock, FiCheck, FiUserPlus, FiAlertCircle, FiArrowRight } from 'react-icons/fi';
-import { Link, useNavigate } from 'react-router';
+import { Link, useNavigate } from 'react-router-dom';
 
 export default function RegisterForm() {
   const [formData, setFormData] = useState({
@@ -26,7 +26,6 @@ export default function RegisterForm() {
     e.preventDefault();
     setError('');
     
-    // Validaciones
     if (formData.password !== formData.confirmPassword) {
       setError('Las contraseñas no coinciden');
       return;
@@ -39,10 +38,26 @@ export default function RegisterForm() {
 
     try {
       setLoading(true);
-      // Simulación de registro (reemplazar con tu API real)
+      
+      // Lógica de registro con localStorage
+      const users = JSON.parse(localStorage.getItem("users")) || [];
+      
+      if (users.some(user => user.email === formData.email)) {
+        setError('El email ya está registrado');
+        return;
+      }
+
+      const newUser = {
+        name: formData.name,
+        email: formData.email,
+        password: formData.password
+      };
+      
+      localStorage.setItem("users", JSON.stringify([...users, newUser]));
+      
       await new Promise(resolve => setTimeout(resolve, 1500));
-      console.log('Registro exitoso:', formData);
-      navigate('/login'); // Redirige al login después del registro
+      navigate('/login');
+      
     } catch (err) {
       setError('Error al registrar. Intenta nuevamente.');
     } finally {
@@ -52,7 +67,6 @@ export default function RegisterForm() {
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
-      {/* Header consistente con Login */}
       <header className="bg-[#1a2d6b] py-5 px-6 md:px-12 flex items-center justify-between border-b border-blue-800">
         <Link to="/" className="flex items-center space-x-3">
           <img 
@@ -74,7 +88,6 @@ export default function RegisterForm() {
         </div>
       </header>
 
-      {/* Formulario de Registro */}
       <main className="flex-grow flex items-center justify-center py-12 px-6">
         <div className="w-full max-w-md bg-white p-8 rounded-xl shadow-lg border border-gray-100">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Regístrate</h1>
@@ -209,7 +222,6 @@ export default function RegisterForm() {
         </div>
       </main>
 
-      {/* Footer consistente */}
       <footer className="bg-white py-8 border-t border-gray-200">
         <div className="max-w-7xl mx-auto px-6 md:px-12 text-center">
           <p className="text-2xl font-light text-gray-700 italic">

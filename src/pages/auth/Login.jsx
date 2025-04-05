@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { FiLogIn, FiUserPlus, FiArrowRight, FiMail, FiLock, FiAlertCircle } from "react-icons/fi";
-import { Link, useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router-dom";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -12,23 +12,32 @@ const Login = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     
-    // Validación básica
     if (!email || !password) {
       setError("Por favor completa todos los campos");
       return;
     }
 
-    // Simulación de login exitoso
-    console.log("Iniciando sesión con:", { email, password });
-    setIsLoggedIn(true);
+    // Lógica de autenticación con localStorage
+    const users = JSON.parse(localStorage.getItem("users")) || [];
+    const user = users.find(user => user.email === email && user.password === password);
+
+    if (user) {
+      localStorage.setItem("currentUser", JSON.stringify({
+        email: user.email,
+        name: user.name,
+        loggedIn: true
+      }));
+      setIsLoggedIn(true);
+    } else {
+      setError("Credenciales incorrectas. Intenta nuevamente.");
+    }
   };
 
-  // Efecto para redirigir después del login
   useEffect(() => {
     if (isLoggedIn) {
       const timer = setTimeout(() => {
         navigate("/chat");
-      }, 1500); // Pequeño retraso para simular procesamiento
+      }, 1500);
 
       return () => clearTimeout(timer);
     }
@@ -36,11 +45,10 @@ const Login = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
-      {/* Header (igual que en Home.jsx) */}
+      {/* Header */}
       <header className="bg-[#1a2d6b] py-5 px-6 md:px-12 flex items-center justify-between border-b border-blue-800">
         <div className="flex items-center space-x-3">
             <Link to="/" className="text-white hover:text-blue-200 flex items-center space-x-1 transition-colors duration-200">
-
                 <img 
                     src="https://i.postimg.cc/d3Z1C30p/loCVHOME.png" 
                     alt="CVClean Logo" 
@@ -62,7 +70,7 @@ const Login = () => {
         </div>
       </header>
 
-      {/* Contenido principal del Login */}
+      {/* Contenido principal */}
       <main className="flex-grow flex items-center justify-center py-12 px-6">
         {isLoggedIn ? (
           <div className="w-full max-w-md bg-white p-8 rounded-xl shadow-lg border border-gray-100 text-center">
@@ -157,7 +165,7 @@ const Login = () => {
         )}
       </main>
 
-      {/* Footer (igual que en Home.jsx) */}
+      {/* Footer */}
       <footer className="bg-white py-8 border-t border-gray-200">
         <div className="max-w-7xl mx-auto px-6 md:px-12 text-center">
           <p className="text-2xl font-light text-gray-700 italic">
