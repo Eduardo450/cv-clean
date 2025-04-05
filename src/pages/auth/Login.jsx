@@ -7,11 +7,25 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
   const navigate = useNavigate();
+
+  // Verificar si hay credenciales guardadas al cargar el componente
+  useEffect(() => {
+    const savedEmail = localStorage.getItem("rememberedEmail");
+    const savedPassword = localStorage.getItem("rememberedPassword");
+    
+    if (savedEmail && savedPassword) {
+      setEmail(savedEmail);
+      setPassword(savedPassword);
+      setRememberMe(true);
+    }
+  }, []);
 
   const handleSubmit = (e) => {
     e.preventDefault();
     
+    // Validación básica
     if (!email || !password) {
       setError("Por favor completa todos los campos");
       return;
@@ -22,11 +36,22 @@ const Login = () => {
     const user = users.find(user => user.email === email && user.password === password);
 
     if (user) {
+      // Guardar datos de usuario actual
       localStorage.setItem("currentUser", JSON.stringify({
         email: user.email,
         name: user.name,
         loggedIn: true
       }));
+
+      // Recordar credenciales si está marcado
+      if (rememberMe) {
+        localStorage.setItem("rememberedEmail", email);
+        localStorage.setItem("rememberedPassword", password);
+      } else {
+        localStorage.removeItem("rememberedEmail");
+        localStorage.removeItem("rememberedPassword");
+      }
+
       setIsLoggedIn(true);
     } else {
       setError("Credenciales incorrectas. Intenta nuevamente.");
@@ -37,7 +62,7 @@ const Login = () => {
     if (isLoggedIn) {
       const timer = setTimeout(() => {
         navigate("/chat");
-      }, 1500);
+      }, 1500); // Pequeño retraso para simular procesamiento
 
       return () => clearTimeout(timer);
     }
@@ -45,32 +70,32 @@ const Login = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
-      {/* Header */}
-      <header className="bg-[#1a2d6b] py-5 px-6 md:px-12 flex items-center justify-between border-b border-blue-800">
+      {/* Header (responsive) */}
+      <header className="bg-[#1a2d6b] py-5 px-4 sm:px-6 md:px-12 flex flex-col sm:flex-row items-center justify-between border-b border-blue-800 gap-4">
         <div className="flex items-center space-x-3">
-            <Link to="/" className="text-white hover:text-blue-200 flex items-center space-x-1 transition-colors duration-200">
-                <img 
-                    src="https://i.postimg.cc/d3Z1C30p/loCVHOME.png" 
-                    alt="CVClean Logo" 
-                    className="h-10"
-                />
-                <span className="text-white font-bold text-2xl">CVClean</span>
-            </Link>
+          <Link to="/" className="text-white hover:text-blue-200 flex items-center space-x-1 transition-colors duration-200">
+            <img 
+              src="https://i.postimg.cc/d3Z1C30p/loCVHOME.png" 
+              alt="CVClean Logo" 
+              className="h-10"
+            />
+            <span className="text-white font-bold text-2xl">CVClean</span>
+          </Link>
         </div>
-        <div className="flex items-center space-x-6">
-          <Link to="/login" className="text-white hover:text-blue-200 flex items-center space-x-1 transition-colors duration-200">
+        <div className="flex items-center space-x-4 sm:space-x-6">
+          <Link to="/login" className="text-white hover:text-blue-200 flex items-center space-x-1 transition-colors duration-200 text-sm sm:text-base">
             <FiLogIn className="text-lg" />
-            <span>Iniciar Sesión</span>
+            <span className="hidden sm:inline">Iniciar Sesión</span>
           </Link>
           
-          <Link to="/registro" className="bg-white text-[#1a2d6b] px-5 py-2.5 rounded-lg hover:bg-gray-50 transition-all duration-200 shadow-sm hover:shadow-md flex items-center space-x-1">
+          <Link to="/registro" className="bg-white text-[#1a2d6b] px-3 sm:px-5 py-1.5 sm:py-2.5 rounded-lg hover:bg-gray-50 transition-all duration-200 shadow-sm hover:shadow-md flex items-center space-x-1 text-sm sm:text-base">
             <FiUserPlus className="text-lg" />
-            <span>Registrarse</span>
+            <span className="hidden sm:inline">Registrarse</span>
           </Link>
         </div>
       </header>
 
-      {/* Contenido principal */}
+      {/* Contenido principal del Login */}
       <main className="flex-grow flex items-center justify-center py-12 px-6">
         {isLoggedIn ? (
           <div className="w-full max-w-md bg-white p-8 rounded-xl shadow-lg border border-gray-100 text-center">
@@ -107,6 +132,7 @@ const Login = () => {
                     onChange={(e) => setEmail(e.target.value)}
                     className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     placeholder="tu@email.com"
+                    required
                   />
                 </div>
               </div>
@@ -123,6 +149,7 @@ const Login = () => {
                     onChange={(e) => setPassword(e.target.value)}
                     className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     placeholder="••••••••"
+                    required
                   />
                 </div>
               </div>
@@ -133,6 +160,8 @@ const Login = () => {
                     id="remember-me"
                     name="remember-me"
                     type="checkbox"
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
                     className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                   />
                   <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700">
